@@ -4,6 +4,7 @@ import { clerkMiddleware } from '@clerk/express';
 
 import userRoutes from '../routes/user.route.js';
 import postRoutes from '../routes/post.route.js';
+import commentsRoutes from '../routes/comment.route.js';
 
 import { ENV } from '../config/env.js';
 import { connectDB } from '../config/db.js';
@@ -18,6 +19,7 @@ app.get('/', (req, res) => res.send('Hello from server'));
 
 app.use('api/users', userRoutes);
 app.use('api/posts', postRoutes);
+app.use('api/comments', commentsRoutes);
 
 // error handeling middleware
 app.use((err, req, res, next) => {
