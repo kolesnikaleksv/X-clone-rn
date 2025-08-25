@@ -4,9 +4,13 @@ import Post from '../models/post.model.js';
 import User from '../models/user.model.js';
 import { getAuth } from '@clerk/express';
 import Notification from '../models/notification.model.js';
+import mongoose from 'mongoose';
 
 export const getComments = asyncHandler(async (req, res) => {
   const { postId } = req.params;
+
+  if (!postId.match(/^[0-9a-fA-F]{24}$/))
+    return res.status(400).json({ error: 'Invalid post ID' });
 
   const comments = await Comment.find({ post: postId })
     .sort({ createdAt: -1 })
@@ -29,16 +33,42 @@ export const createComment = asyncHandler(async (req, res) => {
   if (!user || !post)
     return res.status(404).json({ error: 'User or Post not found' });
 
-  const comment = Comment.create({
-    user: user._id,
-    post: postId,
-    content,
-  });
+  const session = await mongoose.startSession();
+  let comment;
+  try {
+    await session.withTransaction(async () => {
+      comment = await Comment.create(
+        {
+          user: user._id,
+          post: postId,
+          content,
+        },
+        { session }
+      );
+    });
 
-  // link the comment to the post
-  await Post.findByIdAndUpdate(postId, {
-    $push: { comments: comment._id },
-  });
+    // link the comment to the post
+    await Post.findByIdAndUpdate(
+      postId,
+      {
+        $push: { comments: comment._id },
+      },
+      { session }
+    );
+  } finally {
+    await session.endSession();
+  }
+
+  // const comment = Comment.create({
+  //   user: user._id,
+  //   post: postId,
+  //   content,
+  // });
+
+  // // link the comment to the post
+  // await Post.findByIdAndUpdate(postId, {
+  //   $push: { comments: comment._id },
+  // });
 
   // create notification if not commenting on own post
   if (post.user.toString !== user._id.toString()) {
