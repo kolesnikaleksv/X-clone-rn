@@ -1,12 +1,21 @@
-import { Text, View } from 'react-native';
-import '../global.css';
+import { View, Text, Button } from 'react-native';
+import React from 'react';
+import { useClerk, useAuth } from '@clerk/clerk-expo';
+import { Redirect } from 'expo-router';
 
-export default function Index() {
+const HomeScreen = () => {
+  const { signOut } = useClerk();
+  const { isSignedIn } = useAuth();
+  if (!isSignedIn) {
+    return <Redirect href={'/(auth)/sign-in'} />;
+  }
+
   return (
-    <View className="flex-1 items-center justify-center bg-white">
-      <Text className="text-xl font-bold text-blue-500">
-        Welcome to Nativewind!
-      </Text>
+    <View>
+      <Text>HomeScreen</Text>
+      <Button onPress={() => signOut()} title="Logout"></Button>
     </View>
   );
-}
+};
+
+export default HomeScreen;
