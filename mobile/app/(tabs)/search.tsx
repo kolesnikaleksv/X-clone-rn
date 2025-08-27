@@ -5,11 +5,13 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 
-const TRENDING_TOPICS = [
+import { TrendingTopic } from '@/type';
+
+const TRENDING_TOPICS: TrendingTopic[] = [
   { topic: '#ReactNative', tweets: '125K' },
   { topic: '#TypeScript', tweets: '89K' },
   { topic: '#WebDevelopment', tweets: '234K' },
@@ -17,7 +19,9 @@ const TRENDING_TOPICS = [
   { topic: '#TechNews', tweets: '98K' },
 ];
 
-const SearchScreen = () => {
+const SearchScreen: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="px-4 py-3 border-b border-gray-100">
@@ -27,6 +31,8 @@ const SearchScreen = () => {
             placeholder="Search Twitter"
             className="flex-1 ml-3 text-base"
             placeholderTextColor="#657786"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
         </View>
       </View>
