@@ -6,13 +6,13 @@ import {
 } from '../controllers/comment.controller.js';
 import { protectRoute } from '../middleware/auth.middleware.js';
 
-const route = express.Router();
+const router = express.Router();
 
 // public route
-route.get('/post/:postId', getComments);
+router.get('/post/:postId', getComments);
 
 //protected routes
-route.post('/post/:postId', protectRoute, createComment);
-route.delete('/post/:postId', protectRoute, deleteComment);
+router.post('/post/:postId', protectRoute, createComment);
+router.delete('/post/:postId', protectRoute, deleteComment);
 
-export default route;
+export default router;

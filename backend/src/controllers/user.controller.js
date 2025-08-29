@@ -6,7 +6,7 @@ import { clerkClient, getAuth } from '@clerk/express';
 export const getUserProfile = asyncHandler(async (req, res) => {
   const { username } = req.params;
   const user = await User.findOne({ username });
-  if (!user) return res.status(404).json({ message: 'User not found' });
+  if (!user) return res.status(404).json({ error: 'User not found' });
 
   res.status(200).json({ user });
 });
@@ -17,19 +17,24 @@ export const updateProfile = asyncHandler(async (req, res) => {
   const user = await User.findOneAndUpdate({ clerkId: userId }, req.body, {
     new: true,
   });
-  if (!user) return res.status(404).json({ message: 'User not found' });
+  if (!user)
+    return res.status(404).json({ MediaKeyMessageEvent: 'User not found' });
 
   res.status(200).json({ user });
 });
 
 export const syncUser = asyncHandler(async (req, res) => {
   const { userId } = getAuth(req);
-  //check if user already exist in mongoDB
+
+  // check if user already exists in mongoDB
   const existingUser = await User.findOne({ clerkId: userId });
   if (existingUser) {
-    res.status(200).json({ user: existingUser, message: 'User already exist' });
+    return res
+      .status(200)
+      .json({ user: existingUser, message: 'User already exists' });
   }
-  // create new user from clerk data
+
+  // create new user from Clerk data
   const clerkUser = await clerkClient.users.getUser(userId);
 
   const userData = {
@@ -37,7 +42,7 @@ export const syncUser = asyncHandler(async (req, res) => {
     email: clerkUser.emailAddresses[0].emailAddress,
     firstName: clerkUser.firstName || '',
     lastName: clerkUser.lastName || '',
-    userName:
+    username:
       clerkUser.emailAddresses[0].emailAddress.split('@')[0] + '_' + Date.now(),
     profilePicture: clerkUser.imageUrl || '',
   };
@@ -50,12 +55,13 @@ export const syncUser = asyncHandler(async (req, res) => {
 export const getCurrentUser = asyncHandler(async (req, res) => {
   const { userId } = getAuth(req);
   const user = await User.findOne({ clerkId: userId });
+
   if (!user) return res.status(404).json({ message: 'User not found' });
 
   res.status(200).json({ user });
 });
 
-export const folowUser = asyncHandler(async (req, res) => {
+export const followUser = asyncHandler(async (req, res) => {
   const { userId } = getAuth(req);
   const { targetUserId } = req.params;
 
@@ -66,12 +72,12 @@ export const folowUser = asyncHandler(async (req, res) => {
   const targetUser = await User.findById(targetUserId);
 
   if (!currentUser || !targetUser)
-    return res.status(400).json({ error: 'User not found' });
+    return res.status(404).json({ error: 'User not found' });
 
-  const isFolowing = currentUser.following.includes(targetUserId);
+  const isFollowing = currentUser.following.includes(targetUserId);
 
-  if (isFolowing) {
-    //unfolow
+  if (isFollowing) {
+    // unfollow
     await User.findByIdAndUpdate(currentUser._id, {
       $pull: { following: targetUserId },
     });
@@ -79,15 +85,15 @@ export const folowUser = asyncHandler(async (req, res) => {
       $pull: { followers: currentUser._id },
     });
   } else {
-    //follow
-    await User.findByIdAndUpdate(currentUser, {
+    // follow
+    await User.findByIdAndUpdate(currentUser._id, {
       $push: { following: targetUserId },
     });
     await User.findByIdAndUpdate(targetUserId, {
       $push: { followers: currentUser._id },
     });
 
-    //create notification
+    // create notification
     await Notification.create({
       from: currentUser._id,
       to: targetUserId,
@@ -96,7 +102,7 @@ export const folowUser = asyncHandler(async (req, res) => {
   }
 
   res.status(200).json({
-    message: isFolowing
+    message: isFollowing
       ? 'User unfollowed successfully'
       : 'User followed successfully',
   });
