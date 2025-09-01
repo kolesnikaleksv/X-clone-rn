@@ -5,12 +5,9 @@ import {
 } from '../controllers/notification.controller.js';
 import { protectRoute } from '../middleware/auth.middleware.js';
 
-const route = express.Router();
+const router = express.Router();
 
-// public route
-route.get('/', getNotifications);
+router.get('/', protectRoute, getNotifications);
+router.delete('/:notificationId', protectRoute, deleteNotification);
 
-// private route
-route.delete('/:notificationId', protectRoute, deleteNotification);
-
-export default route;
+export default router;

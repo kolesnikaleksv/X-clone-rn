@@ -2,7 +2,7 @@ import { aj } from '../config/arcjet.js';
 
 // Arcjet middleware for rate limiting, bot protection, and security
 
-export const arcjetmiddleware = async (req, res, next) => {
+export const arcjetMiddleware = async (req, res, next) => {
   try {
     const decision = await aj.protect(req, {
       requested: 1, // each request consumes 1 token
@@ -13,17 +13,17 @@ export const arcjetmiddleware = async (req, res, next) => {
       if (decision.reason.isRateLimit()) {
         return res.status(429).json({
           error: 'Too Many Requests',
-          message: 'Rate limit exceeded. Please try again later',
+          message: 'Rate limit exceeded. Please try again later.',
         });
-      } else if (decision.reason.isBot) {
+      } else if (decision.reason.isBot()) {
         return res.status(403).json({
           error: 'Bot access denied',
-          message: 'Automated reqest are not allowed',
+          message: 'Automated requests are not allowed.',
         });
       } else {
         return res.status(403).json({
-          error: 'Forbitten',
-          message: 'Access denied by security policy',
+          error: 'Forbidden',
+          message: 'Access denied by security policy.',
         });
       }
     }
@@ -36,7 +36,7 @@ export const arcjetmiddleware = async (req, res, next) => {
     ) {
       return res.status(403).json({
         error: 'Spoofed bot detected',
-        message: 'Malicious bot activity detected',
+        message: 'Malicious bot activity detected.',
       });
     }
 

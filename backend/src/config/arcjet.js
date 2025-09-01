@@ -4,9 +4,9 @@ import { ENV } from './env.js';
 // initialize Arcjet with security rules
 export const aj = arcjet({
   key: ENV.ARCJET_KEY,
-  characteristics: ['ip_src'],
+  characteristics: ['ip.src'],
   rules: [
-    // shields protect our app from common attacs e.g. SQL ingection, XSS, CSRF attacs
+    // shield protect our app from common attacks e.g. SQL injection, XSS, CSRF attacks
     shield({ mode: 'LIVE' }),
 
     // bot detections - block all the bots except search engines
@@ -24,7 +24,7 @@ export const aj = arcjet({
       mode: 'LIVE',
       refillRate: 10, // tokens added per interval
       interval: 10, // interval in seconds (10 seconds)
-      capacity: 15, // maximum tokens in buket
+      capacity: 15, // maximum tokens in bucket
     }),
   ],
 });
