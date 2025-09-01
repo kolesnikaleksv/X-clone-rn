@@ -3,6 +3,7 @@ import Post from '../models/post.model.js';
 import User from '../models/user.model.js';
 import { getAuth } from '@clerk/express';
 import cloudinary from '../config/cloudinary.js';
+
 import Notification from '../models/notification.model.js';
 import Comment from '../models/comment.model.js';
 
@@ -17,6 +18,7 @@ export const getPosts = asyncHandler(async (req, res) => {
         select: 'username firstName lastName profilePicture',
       },
     });
+
   res.status(200).json({ posts });
 });
 
@@ -41,10 +43,10 @@ export const getPost = asyncHandler(async (req, res) => {
 export const getUserPosts = asyncHandler(async (req, res) => {
   const { username } = req.params;
 
-  const user = await User.findOne(username);
+  const user = await User.findOne({ username });
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  const userPosts = await Post.find({ user: user._id })
+  const posts = await Post.find({ user: user._id })
     .sort({ createdAt: -1 })
     .populate('user', 'username firstName lastName profilePicture')
     .populate({
@@ -55,7 +57,7 @@ export const getUserPosts = asyncHandler(async (req, res) => {
       },
     });
 
-  res.status(200).json({ userPosts });
+  res.status(200).json({ posts });
 });
 
 export const createPost = asyncHandler(async (req, res) => {
@@ -65,7 +67,7 @@ export const createPost = asyncHandler(async (req, res) => {
 
   if (!content && !imageFile) {
     return res
-      .status(404)
+      .status(400)
       .json({ error: 'Post must contain either text or image' });
   }
 
@@ -74,16 +76,16 @@ export const createPost = asyncHandler(async (req, res) => {
 
   let imageUrl = '';
 
-  // upload image to Cloudinary if profided
+  // upload image to Cloudinary if provided
   if (imageFile) {
     try {
-      // conver buffer to base64 for cloudinary
-      const base64Image = `data:base64,${
+      // convert buffer to base64 for cloudinary
+      const base64Image = `data:${
         imageFile.mimetype
-      };${imageFile.buffer.toString('base64')}`;
+      };base64,${imageFile.buffer.toString('base64')}`;
 
       const uploadResponse = await cloudinary.uploader.upload(base64Image, {
-        folder: 'social_media_post',
+        folder: 'social_media_posts',
         resource_type: 'image',
         transformation: [
           { width: 800, height: 600, crop: 'limit' },
@@ -91,10 +93,9 @@ export const createPost = asyncHandler(async (req, res) => {
           { format: 'auto' },
         ],
       });
-
       imageUrl = uploadResponse.secure_url;
-    } catch (error) {
-      console.error('Cloudinary upload error', error);
+    } catch (uploadError) {
+      console.error('Cloudinary upload error:', uploadError);
       return res.status(400).json({ error: 'Failed to upload image' });
     }
   }
@@ -109,14 +110,14 @@ export const createPost = asyncHandler(async (req, res) => {
 });
 
 export const likePost = asyncHandler(async (req, res) => {
-  const { userId } = getAuth();
+  const { userId } = getAuth(req);
   const { postId } = req.params;
 
   const user = await User.findOne({ clerkId: userId });
   const post = await Post.findById(postId);
 
   if (!user || !post)
-    return res.status(404).json({ error: 'User or Post not found' });
+    return res.status(404).json({ error: 'User or post not found' });
 
   const isLiked = post.likes.includes(user._id);
 
@@ -126,7 +127,7 @@ export const likePost = asyncHandler(async (req, res) => {
       $pull: { likes: user._id },
     });
   } else {
-    //like
+    // like
     await Post.findByIdAndUpdate(postId, {
       $push: { likes: user._id },
     });
@@ -155,18 +156,19 @@ export const deletePost = asyncHandler(async (req, res) => {
   const post = await Post.findById(postId);
 
   if (!user || !post)
-    return res.status(404).json({ error: 'User or Post not found' });
+    return res.status(404).json({ error: 'User or post not found' });
 
   if (post.user.toString() !== user._id.toString()) {
     return res
       .status(403)
       .json({ error: 'You can only delete your own posts' });
   }
+
   // delete all comments on this post
-  await Comment.deleteMany({ postId });
+  await Comment.deleteMany({ post: postId });
 
   // delete the post
   await Post.findByIdAndDelete(postId);
 
-  res.status(200).json({ message: 'Post  deleted successfully' });
+  res.status(200).json({ message: 'Post deleted successfully' });
 });
