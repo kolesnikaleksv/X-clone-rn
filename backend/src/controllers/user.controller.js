@@ -17,8 +17,8 @@ export const updateProfile = asyncHandler(async (req, res) => {
   const user = await User.findOneAndUpdate({ clerkId: userId }, req.body, {
     new: true,
   });
-  if (!user)
-    return res.status(404).json({ MediaKeyMessageEvent: 'User not found' });
+
+  if (!user) return res.status(404).json({ error: 'User not found' });
 
   res.status(200).json({ user });
 });
@@ -56,7 +56,7 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
   const { userId } = getAuth(req);
   const user = await User.findOne({ clerkId: userId });
 
-  if (!user) return res.status(404).json({ message: 'User not found' });
+  if (!user) return res.status(404).json({ error: 'User not found' });
 
   res.status(200).json({ user });
 });
