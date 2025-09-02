@@ -1,4 +1,4 @@
-import { useApiClient, userApi } from '@/utils/api';
+import { useApiClient, userApi } from '../utils/api';
 import { useAuth } from '@clerk/clerk-expo';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect } from 'react';
@@ -11,7 +11,7 @@ export const useUserSync = () => {
     mutationFn: () => userApi.syncUser(api),
     onSuccess: (response: any) =>
       console.log('User synced successfully:', response.data.user),
-    onError: (error) => console.error('User sync failed', error),
+    onError: (error) => console.error('User sync failed :', error),
   });
 
   // auto-sync user when signed in
