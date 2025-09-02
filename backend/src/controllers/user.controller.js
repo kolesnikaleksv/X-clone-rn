@@ -28,6 +28,7 @@ export const syncUser = asyncHandler(async (req, res) => {
 
   // check if user already exists in mongoDB
   const existingUser = await User.findOne({ clerkId: userId });
+  console.log('getAuth', existingUser);
   if (existingUser) {
     return res
       .status(200)
@@ -42,12 +43,12 @@ export const syncUser = asyncHandler(async (req, res) => {
     email: clerkUser.emailAddresses[0].emailAddress,
     firstName: clerkUser.firstName || '',
     lastName: clerkUser.lastName || '',
-    username:
-      clerkUser.emailAddresses[0].emailAddress.split('@')[0] + '_' + Date.now(),
+    username: clerkUser.emailAddresses[0].emailAddress.split('@')[0],
     profilePicture: clerkUser.imageUrl || '',
   };
 
   const user = await User.create(userData);
+  console.log('user ', user);
 
   res.status(201).json({ user, message: 'User created successfully' });
 });
