@@ -14,6 +14,7 @@ export const aj = arcjet({
       mode: 'LIVE',
       allow: [
         'CATEGORY:SEARCH_ENGINE',
+        'CATEGORY:UNKNOWN',
         // allow legitimate search engine bots
         // see full list at https://arcjet.com/bot-list
       ],
@@ -22,9 +23,9 @@ export const aj = arcjet({
     // rate limiting with token bucket algorithm
     tokenBucket({
       mode: 'LIVE',
-      refillRate: 10, // tokens added per interval
+      refillRate: 20, // tokens added per interval
       interval: 10, // interval in seconds (10 seconds)
-      capacity: 15, // maximum tokens in bucket
+      capacity: 50, // maximum tokens in bucket
     }),
   ],
 });
