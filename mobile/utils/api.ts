@@ -1,7 +1,10 @@
 import axios, { AxiosInstance } from 'axios';
 import { useAuth } from '@clerk/clerk-expo';
+import { ProfileData } from '@/type';
 
-const API_BASE_URL = 'https://x-clone-rn-one-delta.vercel.app/api';
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ||
+  'https://x-clone-rn-one-delta.vercel.app/api';
 
 export const createApiClient = (
   getToken: () => Promise<string | null>
@@ -29,6 +32,6 @@ export const useApiClient = (): AxiosInstance => {
 export const userApi = {
   syncUser: (api: AxiosInstance) => api.post('/users/sync'),
   getCurrentUser: (api: AxiosInstance) => api.get('/users/me'),
-  updateProfile: (api: AxiosInstance, data: any) =>
+  updateProfile: (api: AxiosInstance, data: ProfileData) =>
     api.put('/users/profile', data),
 };
