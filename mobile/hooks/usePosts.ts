@@ -1,3 +1,4 @@
+import { User } from '@/type';
 import { postApi, useApiClient } from '@/utils/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -19,6 +20,9 @@ export const usePosts = () => {
   const likePostMutation = useMutation({
     mutationFn: (postId: string) => postApi.likePost(api, postId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['posts'] }),
+    onError: (error) => {
+      console.error('Failed to delete post', error);
+    },
   });
 
   const deletePostMutation = useMutation({
@@ -27,9 +31,12 @@ export const usePosts = () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['userPosts'] });
     },
+    onError: (error) => {
+      console.error('Failed to like post', error);
+    },
   });
 
-  const checkIsLiked = (postLikes: string[], currentUser: any) => {
+  const checkIsLiked = (postLikes: string[], currentUser: User | undefined) => {
     const isLiked = currentUser && postLikes.includes(currentUser._id);
     return isLiked;
   };
