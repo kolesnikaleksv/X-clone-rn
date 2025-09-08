@@ -58,6 +58,12 @@ export interface PostCardProps {
   post: Post;
   onLike: (postId: string) => void;
   onDelete: (postId: string) => void;
+  onComment: (post: Post) => void;
   isLiked?: boolean;
   currentUser: User;
+}
+
+export interface CommentsModalProps {
+  selectedPost: Post;
+  onClose: () => void;
 }
