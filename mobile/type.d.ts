@@ -67,3 +67,8 @@ export interface CommentsModalProps {
   selectedPost: Post;
   onClose: () => void;
 }
+
+export interface NotificationCardProps {
+  notification: Notification;
+  onDelete: (notificationId: string) => void;
+}
