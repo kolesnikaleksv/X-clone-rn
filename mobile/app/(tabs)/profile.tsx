@@ -25,7 +25,8 @@ const ProfileScreen = () => {
     posts: userPosts,
     refetch: refetchPosts,
     isLoading: isRefetching,
-  } = usePosts(currentUser.username);
+  } = usePosts(currentUser.username || '');
+  const fallbackAvatar = `https://ui-avatars.com/api/?name=${currentUser?.firstName ?? 'User'}&background=random`;
 
   if (isLoading) {
     return (
@@ -34,6 +35,14 @@ const ProfileScreen = () => {
       </View>
     );
   }
+  if (!currentUser) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <Text className="text-gray-500">Unnable to load profile</Text>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-100">
@@ -64,7 +73,7 @@ const ProfileScreen = () => {
         <View className="px-4 pb-4 border-b border-gray-100">
           <View className="flex-row justify-between items-end -mt-16 mb-4">
             <Image
-              source={{ uri: currentUser.profilePicture }}
+              source={{ uri: currentUser.profilePicture || fallbackAvatar }}
               className="size-32 rounded-full border-4 border-white"
             />
             <TouchableOpacity className="border border-gray-300 px-6 py-2 rounded-full">
@@ -79,10 +88,14 @@ const ProfileScreen = () => {
               <Feather name="check-circle" size={20} color="#1DA1F2" />
             </View>
             <Text className="text-gray-500 mb-2">{currentUser.username}</Text>
-            <Text className="text-gray-900 mb-3">{currentUser.bio}</Text>
+            <Text className="text-gray-900 mb-3">
+              {currentUser.bio || 'no bio availabele'}
+            </Text>
             <View className="flex-row mb-2 items-center">
               <Feather name="map-pin" size={16} color="#657786" />
-              <Text className="text-gray-500 mb-2">{currentUser.location}</Text>
+              <Text className="text-gray-500 mb-2">
+                {currentUser.location || ' Location not specified'}
+              </Text>
             </View>
             <View className="flex-row mb-3 items-center">
               <Feather name="calendar" size={16} color="#657786" />
