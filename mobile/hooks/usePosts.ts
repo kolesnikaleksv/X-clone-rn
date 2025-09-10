@@ -2,7 +2,7 @@ import { User } from '@/type';
 import { postApi, useApiClient } from '@/utils/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-export const usePosts = () => {
+export const usePosts = (username?: string) => {
   const api = useApiClient();
   const queryClient = useQueryClient();
 
@@ -12,14 +12,20 @@ export const usePosts = () => {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['posts'],
-    queryFn: () => postApi.getPosts(api),
+    queryKey: username ? ['userPosts', username] : ['posts'],
+    queryFn: () =>
+      username ? postApi.getUserPosts(api, username) : postApi.getPosts(api),
     select: (response) => response.data.posts,
   });
 
   const likePostMutation = useMutation({
     mutationFn: (postId: string) => postApi.likePost(api, postId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['posts'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      if (username) {
+        queryClient.invalidateQueries({ queryKey: ['userPosts', username] });
+      }
+    },
     onError: (error) => {
       console.error('Failed to delete post', error);
     },
@@ -29,7 +35,9 @@ export const usePosts = () => {
     mutationFn: (postId: string) => postApi.deletePost(api, postId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-      queryClient.invalidateQueries({ queryKey: ['userPosts'] });
+      if (username) {
+        queryClient.invalidateQueries({ queryKey: ['userPosts', username] });
+      }
     },
     onError: (error) => {
       console.error('Failed to like post', error);
