@@ -72,3 +72,19 @@ export interface NotificationCardProps {
   notification: Notification;
   onDelete: (notificationId: string) => void;
 }
+
+export interface TProfileFormData {
+  firstName: string;
+  lastName: string;
+  bio: string;
+  location: string;
+}
+
+export interface EditProfileModalProps {
+  isVisible: boolean;
+  onClose: () => void;
+  formData: TProfileFormData;
+  saveProfile: () => void;
+  updateFormField: (field: string, value: string) => void;
+  isUpdating: boolean;
+}

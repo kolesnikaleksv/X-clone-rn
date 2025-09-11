@@ -5,6 +5,7 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  RefreshControl,
 } from 'react-native';
 import React from 'react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -17,6 +18,8 @@ import { Feather } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { usePosts } from '@/hooks/usePosts';
 import PostsList from '@/components/PostsList';
+import { useProfile } from '@/hooks/useProfile';
+import EditProfileModal from '@/components/EditProfileModal';
 
 const ProfileScreen = () => {
   const { currentUser, isLoading } = useCurrentUser();
@@ -26,6 +29,18 @@ const ProfileScreen = () => {
     refetch: refetchPosts,
     isLoading: isRefetching,
   } = usePosts(currentUser.username || '');
+
+  const {
+    isEditModalVisible,
+    formData,
+    openEditModal,
+    closeEditModal,
+    saveProfile,
+    updateFormField,
+    isUpdating,
+    refetch: refetchProfile,
+  } = useProfile();
+
   const fallbackAvatar = `https://ui-avatars.com/api/?name=${currentUser?.firstName ?? 'User'}&background=random`;
 
   if (isLoading) {
@@ -44,7 +59,7 @@ const ProfileScreen = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-100">
         <View>
           <Text className="text-xl font-bold text-gray-900">
@@ -60,6 +75,17 @@ const ProfileScreen = () => {
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 100 + inset.bottom }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={() => {
+              refetchProfile();
+              refetchPosts();
+            }}
+            colors={['#1DA1F2']}
+            tintColor="#1DA1F2"
+          />
+        }
       >
         <Image
           source={{
@@ -77,7 +103,12 @@ const ProfileScreen = () => {
               className="size-32 rounded-full border-4 border-white"
             />
             <TouchableOpacity className="border border-gray-300 px-6 py-2 rounded-full">
-              <Text className="font-semibold text-gray-900">Edit profile</Text>
+              <Text
+                className="font-semibold text-gray-900"
+                onPress={openEditModal}
+              >
+                Edit profile
+              </Text>
             </TouchableOpacity>
           </View>
           <View className="mb-4">
@@ -94,7 +125,7 @@ const ProfileScreen = () => {
             <View className="flex-row mb-2 items-center">
               <Feather name="map-pin" size={16} color="#657786" />
               <Text className="text-gray-500 mb-2">
-                {currentUser.location || ' Location not specified'}
+                {` ${currentUser.location}` || ' Location not specified'}
               </Text>
             </View>
             <View className="flex-row mb-3 items-center">
@@ -125,6 +156,14 @@ const ProfileScreen = () => {
         </View>
         <PostsList username={currentUser?.username} />
       </ScrollView>
+      <EditProfileModal
+        isVisible={isEditModalVisible}
+        onClose={closeEditModal}
+        formData={formData}
+        saveProfile={saveProfile}
+        updateFormField={updateFormField}
+        isUpdating={isUpdating}
+      />
     </SafeAreaView>
   );
 };
