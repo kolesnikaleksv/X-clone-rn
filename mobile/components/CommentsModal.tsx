@@ -70,9 +70,9 @@ const CommentsModal = ({ selectedPost, onClose }: CommentsModalProps) => {
             </View>
           </View>
           {selectedPost.comments && selectedPost.comments.length > 0 ? (
-            selectedPost.comments.map((comment) => (
+            selectedPost.comments.map((comment, i) => (
               <View
-                key={comment._id}
+                key={comment._id || i}
                 className="border-b border-gray-100 bg-white p-4"
               >
                 <View className="flex-row">
