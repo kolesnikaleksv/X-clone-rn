@@ -42,6 +42,8 @@ export const useProfile = () => {
         bio: currentUser.bio || '',
         location: currentUser.location || '',
       });
+    } else {
+      Alert.alert('Error', 'Unable to load profile data');
     }
     setIsEditModalVisible(true);
   };

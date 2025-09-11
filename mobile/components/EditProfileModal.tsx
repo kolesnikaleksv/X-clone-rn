@@ -20,7 +20,6 @@ const EditProfileModal = ({
 }: EditProfileModalProps) => {
   const handleSave = () => {
     saveProfile();
-    onClose();
   };
   return (
     <Modal
